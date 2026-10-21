@@ -1,0 +1,13 @@
+*
+!Dockerfile
+!LICENSE
+!THIRD_PARTY_NOTICES.txt
+!package.json
+!package-lock.json
+!vendor/
+!vendor/**
+!src/
+!src/**
+!tsconfig*.json
+!scripts/
+!scripts/copy-migrations.mjs
