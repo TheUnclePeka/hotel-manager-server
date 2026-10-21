@@ -64,7 +64,9 @@ export async function generateDeployment(raw) {
   },networks:{backend:{internal:true},edge:{}},volumes:{database:{},files:{},certificates:{},caddy_config:{}},secrets:Object.fromEntries(['database_password','database_url','files_key','owner_password'].map(key=>[key,{file:'./secrets/'+key.replaceAll('_','-')}]))};
   await write('compose.json',JSON.stringify(compose,null,2)+'\n');
   const tls=input.mode==='public'?`tls ${input.email}`:'tls /certs/server.crt /certs/server.key';
-  await write('Caddyfile',`{\n auto_https disable_redirects\n}\nhttps://${input.host} {\n ${tls}\n reverse_proxy api:8080\n}\n`);
+  // TLS clients connecting by IP commonly omit SNI; select this installation's certificate.
+  const defaultSni=net.isIP(input.host)?` default_sni ${input.host}\n`:'';
+  await write('Caddyfile',`{\n auto_https disable_redirects\n${defaultSni}}\nhttps://${input.host} {\n ${tls}\n reverse_proxy api:8080\n}\n`);
   const profile={serverUrl:`https://${input.host}`,...(fingerprint?{certificateSha256:fingerprint}:{})};
   await write('connection.json',JSON.stringify(profile,null,2)+'\n');
   await write('installation.json',JSON.stringify({mode:input.mode,host:input.host,bind:input.bind,createdAt:new Date().toISOString(),login:input.login},null,2)+'\n');
